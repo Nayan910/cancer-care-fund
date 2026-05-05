@@ -79,6 +79,21 @@ CREATE TABLE IF NOT EXISTS activity_log (
     INDEX idx_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Admin login logs with session tracking
+CREATE TABLE IF NOT EXISTS admin_login_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(255),
+    session_id VARCHAR(128),
+    status ENUM('success', 'failed') DEFAULT 'failed',
+    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES admin_users(id) ON DELETE SET NULL,
+    INDEX idx_admin_id (admin_id),
+    INDEX idx_session_id (session_id),
+    INDEX idx_login_time (login_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Insert default admin user (password: admin123 - CHANGE THIS!)
 INSERT INTO admin_users (username, password, full_name, role) 
 VALUES ('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrator', 'admin');

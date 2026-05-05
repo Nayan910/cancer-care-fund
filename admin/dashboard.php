@@ -6,6 +6,10 @@ if (!isLoggedIn()) {
     redirect('login.php');
 }
 
+// Show session info for debugging (can be removed in production)
+$current_session_id = $_SESSION['session_id'] ?? 'N/A';
+$login_time = isset($_SESSION['login_time']) ? date('Y-m-d H:i:s', $_SESSION['login_time']) : 'N/A';
+
 $stats = getFundingStats();
 $recentDonations = getRecentDonations(10);
 ?>

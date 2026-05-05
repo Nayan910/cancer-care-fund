@@ -131,7 +131,40 @@ function clean($input) {
  */
 function isLoggedIn() {
     session_start();
-    return isset($_SESSION['admin_id']);
+    
+    // Check session variables exist
+    if (!isset($_SESSION['admin_id']) || !isset($_SESSION['session_id'])) {
+        return false;
+    }
+    
+    // Verify session ID matches (prevents session fixation)
+    if ($_SESSION['session_id'] !== session_id()) {
+        // Session might be hijacked - destroy it
+        session_destroy();
+        return false;
+    }
+    
+    // Check session timeout (30 minutes)
+    if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > 1800) {
+        session_destroy();
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Get current admin ID
+ */
+function getCurrentAdminId() {
+    return $_SESSION['admin_id'] ?? null;
+}
+
+/**
+ * Get current admin name
+ */
+function getCurrentAdminName() {
+    return $_SESSION['admin_name'] ?? 'Unknown';
 }
 
 /**

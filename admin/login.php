@@ -2,6 +2,10 @@
 session_start();
 require_once __DIR__ . '/../config/database.php';
 
+// Session security - regenerate ID on login
+session_regenerate_id(true);
+$session_id = session_id();
+
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['admin_id'])) {
     header('Location: dashboard.php');
@@ -19,9 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $admin = $result->fetch_assoc();
         
         if ($admin && password_verify($password, $admin['password'])) {
+            // Set session variables
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_name'] = $admin['full_name'] ?? $admin['username'];
             $_SESSION['admin_role'] = $admin['role'];
+            $_SESSION['session_id'] = session_id(); // Track session ID
+            $_SESSION['login_time'] = time();
+            
+            // Log the login with session ID
+            $ip = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+            query("INSERT INTO admin_login_logs (admin_id, ip_address, user_agent, session_id, status) VALUES (?, ?, ?, ?, 'success')",
+                [$admin['id'], $ip, substr($user_agent, 0, 255), session_id()]);
             
             // Update last login
             query("UPDATE admin_users SET last_login = NOW() WHERE id = ?", [$admin['id']]);
